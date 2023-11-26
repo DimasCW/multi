@@ -1,161 +1,141 @@
 import tkinter as tk
-import sqlite3 
+from tkinter import messagebox
+import sqlite3
 
-def hasil_prediksi():
+# Fungsi untuk menentukan prediksi fakultas berdasarkan nilai
+def prediksi_fakultas(nilai):
+    # Mendapatkan nama mata pelajaran dengan nilai tertinggi
+    mata_pelajaran = max(nilai, key=lambda k: nilai[k])
+    
+    # Mapping mata pelajaran ke fakultas
+    mapping_fakultas = {
+        "Biologi": "Kedokteran",
+        "Fisika": "Teknik",
+        "Inggris": "Bahasa",
+        "Matematika": "Matematika",
+        "Kimia": "Kimia",
+        "Sejarah": "Sejarah",
+        "Geografi": "Geografi",
+        "Seni": "Seni",
+        "Olahraga": "Olahraga",
+        "Ekonomi": "Ekonomi"
+    }
+
+    return mapping_fakultas.get(mata_pelajaran, "Tidak dapat memprediksi fakultas")
+
+# Inisialisasi database SQLite
+conn = sqlite3.connect('nilai_siswa.db')
+cursor = conn.cursor()
+
+# Membuat tabel nilai_siswa jika belum ada
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS nilai_siswa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nama_siswa TEXT,
+        biologi REAL,
+        fisika REAL,
+        inggris REAL,
+        matematika REAL,
+        kimia REAL,
+        sejarah REAL,
+        geografi REAL,
+        seni REAL,
+        olahraga REAL,
+        ekonomi REAL
+    )
+''')
+conn.commit()
+
+# Fungsi untuk menangani tombol submit
+def submit_nilai():
     # Mendapatkan nilai dari input
-    nama = entry_nama.get()
+    nama_siswa = entry_nama.get()
+    nilai_biologi = float(entry_nilai["Biologi"].get())
+    nilai_fisika = float(entry_nilai["Fisika"].get())
+    nilai_inggris = float(entry_nilai["Inggris"].get())
+    nilai_matematika = float(entry_nilai["Matematika"].get())
+    nilai_kimia = float(entry_nilai["Kimia"].get())
+    nilai_sejarah = float(entry_nilai["Sejarah"].get())
+    nilai_geografi = float(entry_nilai["Geografi"].get())
+    nilai_seni = float(entry_nilai["Seni"].get())
+    nilai_olahraga = float(entry_nilai["Olahraga"].get())
+    nilai_ekonomi = float(entry_nilai["Ekonomi"].get())
 
-    # Mendapatkan nilai dari 10 mata pelajaran (3 yang sudah ada + 10 tambahan)
-    try:
-        nilai_biologi = float(entry_biologi.get())
-        nilai_fisika = float(entry_fisika.get())
-        nilai_inggris = float(entry_inggris.get())
-        nilai_matematika = float(entry_matematika.get())
-        nilai_kimia = float(entry_kimia.get())
-        nilai_sejarah = float(entry_sejarah.get())
-        nilai_geografi = float(entry_geografi.get())
-        nilai_seni = float(entry_seni.get())
-        nilai_olahraga = float(entry_olahraga.get())
-        nilai_ekonomi = float(entry_ekonomi.get())
-    except ValueError:
-        # Handle the case where the input is not a valid float
-        # You can show an error message or take appropriate action
-        print("Invalid input. Please enter valid numeric values.")
-        return
-    # Menentukan hasil prediksi berdasarkan nilai tertinggi
-    # Membandingkan nilai dari 13 mata pelajaran
-    nilai_tinggi = max(nilai_biologi, nilai_fisika, nilai_inggris, nilai_matematika, nilai_kimia,
-                       nilai_sejarah, nilai_geografi, nilai_seni, nilai_olahraga,
-                       nilai_ekonomi)
-
-    if nilai_tinggi == nilai_biologi:
-        hasil_fakultas = "Kedokteran"
-    elif nilai_tinggi == nilai_fisika:
-        hasil_fakultas = "Teknik"
-    elif nilai_tinggi == nilai_inggris:
-        hasil_fakultas = "Bahasa"
-    elif nilai_tinggi == nilai_matematika:
-        hasil_fakultas = "FMIPA"
-    elif nilai_tinggi == nilai_kimia:
-        hasil_fakultas = "FMIPA"
-    elif nilai_tinggi == nilai_sejarah:
-        hasil_fakultas = "Ilmu Sosial"
-    elif nilai_tinggi == nilai_geografi:
-        hasil_fakultas = "FMIPA"
-    elif nilai_tinggi == nilai_seni:
-        hasil_fakultas = "Ilmu Budaya"
-    elif nilai_tinggi == nilai_olahraga:
-        hasil_fakultas = "Keolahragaan"
-    elif nilai_tinggi == nilai_ekonomi:
-        hasil_fakultas = "FEB"
-        
-    # Tambahkan kondisi untuk prodi berdasarkan nilai tertinggi dari mata pelajaran lainnya
-
-    else:
-        hasil_fakultas = "Belum dapat diprediksi"
-
-    # Menampilkan hasil prediksi
-    hasil.config(text=f"Prodi Pilihan: {hasil_fakultas}")
-
-    # Menyimpan data ke SQLite
-    conn = sqlite3.connect('prediksi_fakultas_.db')
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS prediksi_fakultas (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        nama_siswa TEXT,
-                        biologi REAL,
-                        fisika REAL,
-                        inggris REAL,
-                        matematika REAL,
-                        kimia REAL,
-                        sejarah REAL,
-                        geografi REAL,
-                        seni REAL,
-                        olahraga REAL,
-                        ekonomi REAL,
-                        prediksi_fakultas TEXT
-                    )''')
-    cursor.execute('''INSERT INTO prediksi_fakultas (nama_siswa, biologi, fisika, inggris, matematika,
-                    kimia, sejarah, geografi, seni, olahraga, ekonomi, prediksi_fakultas)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                   (nama, nilai_biologi, nilai_fisika, nilai_inggris, nilai_matematika, nilai_kimia,
-                    nilai_sejarah, nilai_geografi, nilai_seni, nilai_olahraga,
-                    nilai_ekonomi, hasil_fakultas))
+    # Menambahkan data siswa ke dalam database
+    cursor.execute('''
+        INSERT INTO nilai_siswa (nama_siswa, biologi, fisika, inggris, matematika, kimia, sejarah, geografi, seni, olahraga, ekonomi)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (nama_siswa, nilai_biologi, nilai_fisika, nilai_inggris, nilai_matematika, nilai_kimia, nilai_sejarah, nilai_geografi, nilai_seni, nilai_olahraga, nilai_ekonomi))
     conn.commit()
-    conn.close()
 
-# Membuat jendela Tkinter
+    # Menampilkan pesan bahwa data telah ditambahkan
+    messagebox.showinfo("Sukses", f"Data nilai untuk {nama_siswa} berhasil ditambahkan!")
+
+    # Mengosongkan input setelah data ditambahkan
+    entry_nama.delete(0, tk.END)
+    for key in entry_nilai:
+        entry_nilai[key].delete(0, tk.END)
+
+# Fungsi untuk melakukan prediksi fakultas berdasarkan nilai tertinggi
+def prediksi_fakultas_iterasi():
+    cursor.execute('SELECT * FROM nilai_siswa')
+    data_nilai_siswa = cursor.fetchall()
+
+    if not data_nilai_siswa:
+        messagebox.showwarning("Peringatan", "Belum ada data nilai siswa yang dimasukkan!")
+        return
+
+    for data_siswa in data_nilai_siswa:
+        nama_siswa = data_siswa[1]
+        nilai_siswa = {
+            "Biologi": data_siswa[2],
+            "Fisika": data_siswa[3],
+            "Inggris": data_siswa[4],
+            "Matematika": data_siswa[5],
+            "Kimia": data_siswa[6],
+            "Sejarah": data_siswa[7],
+            "Geografi": data_siswa[8],
+            "Seni": data_siswa[9],
+            "Olahraga": data_siswa[10],
+            "Ekonomi": data_siswa[11]
+        }
+        prediksi = prediksi_fakultas(nilai_siswa)
+
+        # Menampilkan hasil prediksi fakultas di bawah tombol submit
+        label_hasil.config(text=f"Prediksi fakultas untuk {nama_siswa}: {prediksi}")
+
+# Membuat GUI menggunakan tkinter
 root = tk.Tk()
-root.title("Aplikasi Prediksi Prodi Pilihan")
-root.geometry("500x600")  # Mengatur ukuran jendela
+root.title("Prediksi Fakultas")
 
-# Label judul
-label_judul = tk.Label(root, text="Aplikasi Prediksi Prodi Pilihan", font=("Arial", 16))
-label_judul.pack(pady=10)
-
-# Input nilai mata pelajaran
-label_nama = tk.Label(root, text="Nama Siswa: ")
-label_nama.pack()
+# Label dan Entry untuk input nama siswa
+label_nama = tk.Label(root, text="Nama Siswa:")
+label_nama.grid(row=0, column=0, padx=10, pady=10)
 entry_nama = tk.Entry(root)
-entry_nama.pack()
+entry_nama.grid(row=0, column=1, padx=10, pady=10)
 
-# Membuat 10 label dan entry baru untuk 10 mata pelajaran tambahan
-label_biologi = tk.Label(root, text="Nilai Biologi: ")
-label_biologi.pack()
-entry_biologi = tk.Entry(root)
-entry_biologi.pack()
+# Entry untuk setiap mata pelajaran
+mata_pelajaran = ["Biologi", "Fisika", "Inggris", "Matematika", "Kimia", "Sejarah", "Geografi", "Seni", "Olahraga", "Ekonomi"]
+entry_nilai = {}
+row_counter = 1
+for pelajaran in mata_pelajaran:
+    label_pelajaran = tk.Label(root, text=f"Nilai {pelajaran}:")
+    label_pelajaran.grid(row=row_counter, column=0, padx=10, pady=10)
+    entry_nilai[pelajaran] = tk.Entry(root)
+    entry_nilai[pelajaran].grid(row=row_counter, column=1, padx=10, pady=10)
+    row_counter += 1
 
-label_fisika = tk.Label(root, text="Nilai Fisika: ")
-label_fisika.pack()
-entry_fisika = tk.Entry(root)
-entry_fisika.pack()
+# Tombol Submit
+button_submit = tk.Button(root, text="Submit", command=submit_nilai)
+button_submit.grid(row=row_counter, column=0, columnspan=2, pady=10)
 
-label_inggris = tk.Label(root, text="Nilai Inggris: ")
-label_inggris.pack()
-entry_inggris = tk.Entry(root)
-entry_inggris.pack()
+# Label untuk menampilkan hasil prediksi fakultas
+label_hasil = tk.Label(root, text="")
+label_hasil.grid(row=row_counter + 1, column=0, columnspan=2, pady=10)
 
-label_matematika = tk.Label(root, text="Nilai Matematika: ")
-label_matematika.pack()
-entry_matematika = tk.Entry(root)
-entry_matematika.pack()
+# Tombol untuk menampilkan prediksi fakultas
+button_prediksi = tk.Button(root, text="Prediksi Fakultas", command=prediksi_fakultas_iterasi)
+button_prediksi.grid(row=row_counter + 2, column=0, columnspan=2, pady=10)
 
-label_kimia = tk.Label(root, text="Nilai Kimia: ")
-label_kimia.pack()
-entry_kimia = tk.Entry(root)
-entry_kimia.pack()
-
-label_sejarah = tk.Label(root, text="Nilai Sejarah: ")
-label_sejarah.pack()
-entry_sejarah = tk.Entry(root)
-entry_sejarah.pack()
-
-label_geografi = tk.Label(root, text="Nilai Geografi: ")
-label_geografi.pack()
-entry_geografi = tk.Entry(root)
-entry_geografi.pack()
-
-label_seni = tk.Label(root, text="Nilai Seni: ")
-label_seni.pack()
-entry_seni = tk.Entry(root)
-entry_seni.pack()
-
-label_olahraga = tk.Label(root, text="Nilai Olahraga: ")
-label_olahraga.pack()
-entry_olahraga = tk.Entry(root)
-entry_olahraga.pack()
-
-label_ekonomi = tk.Label(root, text="Nilai Ekonomi: ")
-label_ekonomi.pack()
-entry_ekonomi = tk.Entry(root)
-entry_ekonomi.pack()
-
-# Button Submit Nilai
-button_submit = tk.Button(root, text="Submit Nilai", command=hasil_prediksi)
-button_submit.pack(pady=10)
-
-# Label luaran hasil prediksi
-hasil = tk.Label(root, text="Prodi Pilihan: ", font=("Arial", 12))
-hasil.pack()
-
+# Menjalankan program
 root.mainloop()
